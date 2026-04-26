@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RupeeRoute — USD to PKR Withdrawal Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0e1a;
+  --surface: #111827;
+  --surface2: #1a2235;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --green: #00d97e;
+  --green-dim: rgba(0,217,126,0.12);
+  --green-text: #00ff94;
+  --red: #ff4d6d;
+  --red-dim: rgba(255,77,109,0.1);
+  --amber: #f59e0b;
+  --amber-dim: rgba(245,158,11,0.1);
+  --text: #f0f4ff;
+  --text2: #8892a4;
+  --text3: #4a5568;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Sora', sans-serif;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ─── NAV ─── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem; height: 56px;
+  background: rgba(10,14,26,0.85);
+  backdrop-filter: blur(12px);
+  border-bottom: 0.5px solid var(--border);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: var(--green); display: flex; align-items: center; justify-content: center;
+}
+.logo-icon svg { width: 16px; height: 16px; }
+.logo-name { font-size: 15px; font-weight: 600; color: var(--text); }
+.logo-tag {
+  font-size: 10px; font-weight: 400; color: var(--text2);
+  background: var(--surface2); border: 0.5px solid var(--border2);
+  padding: 2px 8px; border-radius: 20px;
+}
+.nav-links { display: flex; gap: 2rem; }
+.nav-links a { font-size: 13px; color: var(--text2); text-decoration: none; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); }
+.nav-btn {
+  font-family: var(--sans); font-size: 12px; font-weight: 500;
+  padding: 6px 16px; border-radius: 8px;
+  background: var(--green); color: #0a1a10; border: none; cursor: pointer;
+  transition: opacity 0.2s;
+}
+.nav-btn:hover { opacity: 0.85; }
+
+/* ─── HERO ─── */
+.hero {
+  text-align: center; padding: 5rem 1.5rem 3rem;
+  background: radial-gradient(ellipse 60% 40% at 50% -10%, rgba(0,217,126,0.08), transparent);
+}
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--green); font-family: var(--mono);
+  background: var(--green-dim); border: 0.5px solid rgba(0,217,126,0.25);
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 1.5rem;
+}
+.hero-badge span { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 600;
+  line-height: 1.2; margin-bottom: 1rem; letter-spacing: -0.02em;
+}
+h1 em { font-style: normal; color: var(--green); }
+.hero p {
+  font-size: 15px; color: var(--text2); max-width: 480px; margin: 0 auto 2.5rem;
+}
+.hero-stats {
+  display: inline-flex; gap: 2rem;
+  border: 0.5px solid var(--border2); border-radius: var(--radius-lg);
+  padding: 1rem 2rem; background: var(--surface);
+}
+.stat-item { text-align: center; }
+.stat-num { font-size: 20px; font-weight: 600; color: var(--green); font-family: var(--mono); }
+.stat-lbl { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ─── MAIN LAYOUT ─── */
+.main { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem 6rem; }
+
+/* ─── SECTION LABELS ─── */
+.section-label {
+  font-size: 10px; font-weight: 500; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 12px; font-family: var(--mono);
+}
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 16px;
+}
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.card-title { font-size: 13px; font-weight: 500; color: var(--text); }
+
+/* ─── GRID ─── */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+@media(max-width:600px){ .grid3{ grid-template-columns:1fr 1fr; } .grid2{ grid-template-columns:1fr; } }
+
+/* ─── INPUT BOXES ─── */
+.ibox { display: flex; flex-direction: column; gap: 4px; }
+.ibox label { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.ibox input, .ibox select {
+  background: var(--surface2); border: 0.5px solid var(--border2);
+  border-radius: var(--radius); color: var(--text);
+  font-family: var(--mono); font-size: 14px; font-weight: 500;
+  padding: 8px 12px; width: 100%;
+  transition: border-color 0.2s;
+}
+.ibox input:focus, .ibox select:focus {
+  outline: none; border-color: var(--green);
+}
+.ibox .hint { font-size: 10px; color: var(--text3); }
+
+/* ─── USD AMOUNT ─── */
+.amount-wrapper {
+  display: flex; align-items: center;
+  background: var(--surface2); border: 0.5px solid var(--border2);
+  border-radius: var(--radius-lg); padding: 12px 18px; gap: 12px;
+  transition: border-color 0.2s;
+}
+.amount-wrapper:focus-within { border-color: var(--green); }
+.amount-symbol { font-size: 28px; color: var(--text3); font-family: var(--mono); }
+.amount-input {
+  flex: 1; background: none; border: none; outline: none;
+  font-family: var(--mono); font-size: 36px; font-weight: 500;
+  color: var(--text); width: 100%;
+}
+.amount-label { font-size: 11px; color: var(--text3); text-align: right; }
+
+/* ─── ROUTE EDITOR ─── */
+.route-editor {
+  background: var(--surface2); border: 0.5px solid var(--border);
+  border-radius: var(--radius); padding: 1rem; margin-bottom: 10px;
+  position: relative; transition: border-color 0.2s;
+}
+.route-editor:hover { border-color: var(--border2); }
+.route-editor-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+}
+.route-num {
+  font-size: 10px; color: var(--green); font-family: var(--mono);
+  background: var(--green-dim); border: 0.5px solid rgba(0,217,126,0.2);
+  padding: 2px 8px; border-radius: 20px;
+}
+.del-btn {
+  font-size: 11px; color: var(--text3); background: none;
+  border: 0.5px solid var(--border); border-radius: 6px;
+  padding: 3px 10px; cursor: pointer; font-family: var(--sans);
+  transition: all 0.2s;
+}
+.del-btn:hover { color: var(--red); border-color: var(--red); }
+.route-name-input {
+  width: 100%; background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 8px; color: var(--text); font-family: var(--sans);
+  font-size: 13px; font-weight: 500; padding: 7px 12px; margin-bottom: 10px;
+}
+.route-name-input:focus { outline: none; border-color: var(--green); }
+
+/* ─── ADD ROUTE ─── */
+.add-route-btn {
+  width: 100%; padding: 12px; border-radius: var(--radius);
+  border: 0.5px dashed var(--border2); background: none;
+  color: var(--text3); font-family: var(--sans); font-size: 13px;
+  cursor: pointer; transition: all 0.2s; margin-top: 4px;
+}
+.add-route-btn:hover { color: var(--green); border-color: rgba(0,217,126,0.3); background: var(--green-dim); }
+
+/* ─── RESULTS ─── */
+.results-container { margin-top: 8px; }
+.result-row {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: var(--radius); padding: 1rem 1.25rem; margin-bottom: 8px;
+  transition: all 0.3s; position: relative; overflow: hidden;
+}
+.result-row.winner {
+  border-color: var(--green); background: rgba(0,217,126,0.04);
+}
+.result-row.winner::before {
+  content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+  width: 3px; background: var(--green);
+}
+.result-row.unavailable { opacity: 0.4; }
+.rank-badge {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: 14px; font-weight: 500;
+  flex-shrink: 0;
+}
+.rank-1 { background: var(--green-dim); color: var(--green); }
+.rank-other { background: var(--surface2); color: var(--text3); }
+.rank-na { background: var(--surface2); color: var(--text3); }
+.result-info { flex: 1; min-width: 0; }
+.result-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.result-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.result-pkr { text-align: right; flex-shrink: 0; }
+.pkr-amount { font-family: var(--mono); font-size: 20px; font-weight: 500; color: var(--text); }
+.pkr-amount.best { color: var(--green); }
+.pkr-loss { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-top: 2px; }
+.best-tag {
+  font-size: 10px; color: var(--green); background: var(--green-dim);
+  border: 0.5px solid rgba(0,217,126,0.2);
+  padding: 1px 8px; border-radius: 20px; font-family: var(--mono); margin-left: 8px;
+}
+.unavail-tag {
+  font-size: 10px; color: var(--text3); background: var(--surface2);
+  border: 0.5px solid var(--border);
+  padding: 1px 8px; border-radius: 20px; font-family: var(--mono); margin-left: 8px;
+}
+
+/* ─── RECOMMENDATION BOX ─── */
+.rec-box {
+  border-radius: var(--radius); padding: 1rem 1.25rem; margin-top: 12px;
+  border: 0.5px solid rgba(0,217,126,0.2); background: var(--green-dim);
+}
+.rec-title { font-size: 13px; font-weight: 500; color: var(--green-text); margin-bottom: 4px; }
+.rec-body { font-size: 12px; color: rgba(0,255,148,0.7); font-family: var(--mono); }
+.warn-box {
+  border-radius: var(--radius); padding: 1rem 1.25rem; margin-top: 12px;
+  border: 0.5px solid rgba(245,158,11,0.25); background: var(--amber-dim);
+}
+.warn-title { font-size: 13px; font-weight: 500; color: var(--amber); margin-bottom: 4px; }
+.warn-body { font-size: 12px; color: rgba(245,158,11,0.7); font-family: var(--mono); }
+
+/* ─── BREAKEVEN INFO ─── */
+.breakeven-bar {
+  margin-top: 16px; padding: 12px; border-radius: var(--radius);
+  background: var(--surface2); border: 0.5px solid var(--border);
+}
+.be-label { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-bottom: 8px; }
+.be-track {
+  height: 4px; background: var(--surface); border-radius: 4px; position: relative; overflow: visible;
+}
+.be-fill { height: 100%; background: var(--green); border-radius: 4px; transition: width 0.4s; }
+.be-marker {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--text); border: 2px solid var(--bg);
+}
+
+/* ─── EXAMPLES ─── */
+.examples-section { margin-top: 2rem; }
+.example-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+@media(max-width:600px){ .example-grid{ grid-template-columns:1fr; } }
+.example-card {
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: var(--radius); padding: 1rem; cursor: pointer;
+  transition: all 0.2s;
+}
+.example-card:hover { border-color: var(--green); background: var(--green-dim); }
+.ex-label { font-size: 10px; color: var(--text3); font-family: var(--mono); margin-bottom: 6px; }
+.ex-amount { font-size: 22px; font-weight: 600; color: var(--text); font-family: var(--mono); }
+.ex-desc { font-size: 11px; color: var(--text2); margin-top: 4px; }
+.ex-tag {
+  display: inline-block; font-size: 10px; margin-top: 6px;
+  padding: 2px 8px; border-radius: 20px; font-family: var(--mono);
+}
+
+/* ─── FOOTER ─── */
+footer {
+  text-align: center; padding: 2rem;
+  border-top: 0.5px solid var(--border);
+  color: var(--text3); font-size: 11px; font-family: var(--mono);
+}
+footer a { color: var(--green); text-decoration: none; }
+
+/* ─── DIVIDER ─── */
+hr { border: none; border-top: 0.5px solid var(--border); margin: 1.25rem 0; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 16 16" fill="none">
+        <path d="M8 2L14 5.5V10.5L8 14L2 10.5V5.5L8 2Z" stroke="#0a1a10" stroke-width="1.5" fill="#0a1a10"/>
+        <path d="M8 5V11M5.5 8H10.5" stroke="#00d97e" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-name">RupeeRoute</span>
+    <span class="logo-tag">Beta</span>
+  </div>
+  <div class="nav-links">
+    <a href="#calculator">Calculator</a>
+    <a href="#examples">Examples</a>
+    <a href="#routes">Routes</a>
+  </div>
+  <button class="nav-btn" onclick="resetToDefaults()">Reset Defaults</button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">
+    <span></span>
+    Freelancer ka financial tool
+  </div>
+  <h1>Har dollar ka <em>maximum</em><br>rupee nikalo</h1>
+  <p>Payoneer, nsave, ElevatePay — sab compare karo. Apne rates khud daalo. Best route ek second mein.</p>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num" id="statSaved">₨0</div>
+      <div class="stat-lbl">Best route extra deta hai</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="statRoutes">2</div>
+      <div class="stat-lbl">Routes compare ho rahe</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" id="statBreakeven">$243</div>
+      <div class="stat-lbl">Break-even point</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- RATES -->
+  <div id="calculator">
+    <div class="section-label">01 — Aaj ke rates daalo</div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Market Rates</span>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono);">Manually update karo har baar</span>
+      </div>
+      <div class="grid3">
+        <div class="ibox">
+          <label>Mid-market (PKR/USD)</label>
+          <input type="number" id="rMarket" value="281" step="0.1" oninput="calculate()">
+          <div class="hint">Google → "USD to PKR"</div>
+        </div>
+        <div class="ibox">
+          <label>Payoneer direct rate</label>
+          <input type="number" id="rPayoneerDirect" value="269" step="0.1" oninput="calculate()">
+          <div class="hint">Payoneer withdraw screen</div>
+        </div>
+        <div class="ibox">
+          <label>Local bank min (USD)</label>
+          <input type="number" id="localMin" value="150" step="1" oninput="calculate()">
+          <div class="hint">Payoneer direct ka minimum</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AMOUNT -->
+    <div class="section-label" style="margin-top:1.5rem;">02 — Kitne USD hain</div>
+    <div class="card">
+      <div class="amount-wrapper">
+        <div class="amount-symbol">$</div>
+        <input type="number" class="amount-input" id="usdInput" value="200" min="1" oninput="calculate()" placeholder="0">
+        <div class="amount-label">
+          <div style="font-size:11px;color:var(--text3);">Market value</div>
+          <div style="font-size:14px;font-weight:500;font-family:var(--mono);color:var(--text);" id="marketVal">₨56,200</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROUTES -->
+    <div class="section-label" id="routes" style="margin-top:1.5rem;">03 — Routes manage karo</div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Withdrawal Routes</span>
+        <span style="font-size:11px;color:var(--text3);">Payoneer → Platform → Local Bank</span>
+      </div>
+      <div id="routesList"></div>
+      <button class="add-route-btn" onclick="addRoute()">+ Naya route add karo (ElevatePay, WorldFirst, etc.)</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="section-label" style="margin-top:1.5rem;">04 — Comparison</div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Best se Worst</span>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono);" id="resultsMeta"></span>
+      </div>
+      <div class="results-container" id="results"></div>
+    </div>
+  </div>
+
+  <!-- EXAMPLES -->
+  <div class="examples-section" id="examples">
+    <div class="section-label">Quick Examples — Click to load</div>
+    <div class="example-grid">
+      <div class="example-card" onclick="loadExample(90)">
+        <div class="ex-label">1 month income</div>
+        <div class="ex-amount">$90</div>
+        <div class="ex-desc">Creative Fabrica monthly</div>
+        <div class="ex-tag" style="background:var(--amber-dim);color:var(--amber);">nsave only option</div>
+      </div>
+      <div class="example-card" onclick="loadExample(180)">
+        <div class="ex-label">2 months saved</div>
+        <div class="ex-amount">$180</div>
+        <div class="ex-desc">Best time to withdraw</div>
+        <div class="ex-tag" style="background:var(--green-dim);color:var(--green);">Direct local wins</div>
+      </div>
+      <div class="example-card" onclick="loadExample(270)">
+        <div class="ex-label">3 months saved</div>
+        <div class="ex-amount">$270</div>
+        <div class="ex-desc">Optimal for nsave route</div>
+        <div class="ex-tag" style="background:var(--green-dim);color:var(--green);">nsave route wins</div>
+      </div>
+      <div class="example-card" onclick="loadExample(200)">
+        <div class="ex-label">Current balance</div>
+        <div class="ex-amount">$200</div>
+        <div class="ex-desc">Aapka pehla account</div>
+        <div class="ex-tag" style="background:var(--green-dim);color:var(--green);">Direct local wins</div>
+      </div>
+      <div class="example-card" onclick="loadExample(400)">
+        <div class="ex-label">DST balance</div>
+        <div class="ex-amount">$400</div>
+        <div class="ex-desc">Aapka doosra account</div>
+        <div class="ex-tag" style="background:var(--green-dim);color:var(--green);">nsave wins clearly</div>
+      </div>
+      <div class="example-card" onclick="loadExample(50)">
+        <div class="ex-label">Chhota balance</div>
+        <div class="ex-amount">$50</div>
+        <div class="ex-desc">Roko — fees sab kha legi</div>
+        <div class="ex-tag" style="background:var(--red-dim);color:var(--red);">Mat nikalo abhi</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>RupeeRoute — Freelancer withdrawal optimizer &nbsp;·&nbsp; Rates manually updated &nbsp;·&nbsp; Not financial advice</p>
+  <p style="margin-top:6px;">Rates change daily — always verify on platform before withdrawing &nbsp;·&nbsp; <a href="#calculator">Back to top</a></p>
+</footer>
+
+<script>
+let routes = [
+  { id: 1, name: 'Payoneer → nsave → Local Bank', rate: 277, fee: 7, minAmt: 25, note: '$6 Payoneer + $1 nsave' },
+  { id: 2, name: 'Payoneer → Direct Local Bank', rate: 0, minAmt: 150, fee: 0, note: 'Rate Payoneer screen se lo', useDirect: true },
+];
+let nextId = 3;
+
+function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function fmt(n) { return Math.round(n).toLocaleString(); }
+function fmtD(n) { return parseFloat(n).toFixed(2); }
+
+function renderRoutes() {
+  const el = document.getElementById('routesList');
+  el.innerHTML = '';
+  routes.forEach((r, i) => {
+    const div = document.createElement('div');
+    div.className = 'route-editor';
+    div.innerHTML = `
+      <div class="route-editor-header">
+        <span class="route-num">Route ${i + 1}</span>
+        ${routes.length > 1 ? `<button class="del-btn" onclick="deleteRoute(${r.id})">Hatao</button>` : ''}
+      </div>
+      <input class="route-name-input" type="text" value="${r.name}" placeholder="Route ka naam (e.g. ElevatePay → PKR)"
+        oninput="updateRoute(${r.id},'name',this.value)">
+      <div class="grid3">
+        <div class="ibox">
+          <label>${r.useDirect ? 'Platform Rate (auto)' : 'PKR rate (per USD)'}</label>
+          ${r.useDirect
+            ? `<input type="text" disabled style="opacity:0.4;" value="Payoneer direct rate se (upar set karo)">`
+            : `<input type="number" value="${r.rate}" step="0.1" oninput="updateRoute(${r.id},'rate',this.value)">`
+          }
+          <div class="hint">${r.useDirect ? 'Upar "Payoneer direct rate" field se aata hai' : 'App mein convert karo, rate check karo'}</div>
+        </div>
+        <div class="ibox">
+          <label>Total fee (USD flat)</label>
+          <input type="number" value="${r.fee}" step="0.5" oninput="updateRoute(${r.id},'fee',this.value)">
+          <div class="hint">Sab milake kitni fee lagti hai</div>
+        </div>
+        <div class="ibox">
+          <label>Min amount (USD)</label>
+          <input type="number" value="${r.minAmt}" step="1" oninput="updateRoute(${r.id},'minAmt',this.value)">
+          <div class="hint">Is se kam nahi nikalta</div>
+        </div>
+      </div>
+      <div class="ibox" style="margin-top:10px;">
+        <label>Note (optional)</label>
+        <input type="text" value="${r.note || ''}" placeholder="e.g. Meezan Bank withdraw — ePRC milti hai"
+          oninput="updateRoute(${r.id},'note',this.value)" style="font-size:12px;">
+      </div>
+    `;
+    el.appendChild(div);
+  });
+}
+
+function updateRoute(id, field, value) {
+  const r = routes.find(x => x.id === id);
+  if (!r) return;
+  if (['rate', 'fee', 'minAmt'].includes(field)) r[field] = parseFloat(value) || 0;
+  else r[field] = value;
+  calculate();
+}
+
+function addRoute() {
+  routes.push({ id: nextId++, name: 'Naya Route', rate: 275, fee: 1.5, minAmt: 0, note: '' });
+  renderRoutes();
+  calculate();
+}
+
+function deleteRoute(id) {
+  if (routes.length <= 1) return;
+  routes = routes.filter(r => r.id !== id);
+  renderRoutes();
+  calculate();
+}
+
+function loadExample(amt) {
+  document.getElementById('usdInput').value = amt;
+  calculate();
+  document.getElementById('calculator').scrollIntoView({ behavior: 'smooth' });
+}
+
+function resetToDefaults() {
+  document.getElementById('rMarket').value = 281;
+  document.getElementById('rPayoneerDirect').value = 269;
+  document.getElementById('localMin').value = 150;
+  document.getElementById('usdInput').value = 200;
+  routes = [
+    { id: 1, name: 'Payoneer → nsave → Local Bank', rate: 277, fee: 7, minAmt: 25, note: '$6 Payoneer + $1 nsave' },
+    { id: 2, name: 'Payoneer → Direct Local Bank', rate: 0, minAmt: 150, fee: 0, note: 'Rate Payoneer screen se lo', useDirect: true },
+  ];
+  nextId = 3;
+  renderRoutes();
+  calculate();
+}
+
+function calculate() {
+  const usd = v('usdInput');
+  const mRate = v('rMarket');
+  const pDirect = v('rPayoneerDirect');
+  const localMin = v('localMin');
+  const market_pkr = usd * mRate;
+
+  document.getElementById('marketVal').textContent = '₨' + fmt(market_pkr);
+
+  const computed = routes.map(r => {
+    const effectiveRate = r.useDirect ? pDirect : r.rate;
+    const effectiveMin = r.useDirect ? localMin : r.minAmt;
+    const available = usd >= effectiveMin;
+    const net = usd - r.fee;
+    const pkr = available && net > 0 ? net * effectiveRate : null;
+    const loss = pkr != null ? market_pkr - pkr : null;
+    return { ...r, effectiveRate, effectiveMin, available, net, pkr, loss };
+  });
+
+  const available = computed.filter(r => r.available && r.pkr != null).sort((a, b) => b.pkr - a.pkr);
+  const best = available[0];
+
+  document.getElementById('statRoutes').textContent = computed.length;
+
+  let breakeven = null;
+  const nsaveR = routes.find(r => !r.useDirect);
+  const directR = routes.find(r => r.useDirect);
+  if (nsaveR && directR && nsaveR.rate > pDirect && nsaveR.fee > 0) {
+    breakeven = Math.round((nsaveR.fee * nsaveR.rate) / (nsaveR.rate - pDirect));
+    document.getElementById('statBreakeven').textContent = '$' + breakeven;
+  }
+
+  if (best && available.length > 1) {
+    const diff = best.pkr - available[available.length - 1].pkr;
+    document.getElementById('statSaved').textContent = '₨' + fmt(diff);
+  } else {
+    document.getElementById('statSaved').textContent = '—';
+  }
+
+  document.getElementById('resultsMeta').textContent = usd > 0 ? `$${fmtD(usd)} → market ₨${fmt(market_pkr)}` : '';
+
+  let html = '';
+
+  if (usd <= 0) {
+    html = '<div style="color:var(--text3);font-size:13px;padding:1rem 0;">Amount likho upar</div>';
+  } else if (usd < 25) {
+    html = `<div class="warn-box">
+      <div class="warn-title">Bilkul mat nikalo abhi</div>
+      <div class="warn-body">$${fmtD(usd)} bahut kam hai — fees percentage mein bahut zyada hogi. $150+ hone tak ruko.</div>
+    </div>`;
+  } else {
+    if (available.length === 0) {
+      html = `<div class="warn-box">
+        <div class="warn-title">Koi route available nahi</div>
+        <div class="warn-body">Tamam routes ka minimum amount poora nahi ho raha. Roko ya routes ka minimum check karo.</div>
+      </div>`;
+    } else {
+      computed.forEach((r, i) => {
+        if (!r.available || r.pkr == null) {
+          html += `<div class="result-row unavailable">
+            <div class="rank-badge rank-na">—</div>
+            <div class="result-info">
+              <div class="result-name">${r.name} <span class="unavail-tag">Min $${r.effectiveMin} chahiye</span></div>
+              <div class="result-meta">Amount kam hai — use nahi ho sakta</div>
+            </div>
+            <div class="result-pkr"><div class="pkr-amount" style="color:var(--text3);">N/A</div></div>
+          </div>`;
+          return;
+        }
+        const rank = available.findIndex(x => x.id === r.id);
+        const isWinner = rank === 0;
+        const diffFromBest = isWinner ? null : best.pkr - r.pkr;
+        html += `<div class="result-row ${isWinner ? 'winner' : ''}">
+          <div class="rank-badge ${isWinner ? 'rank-1' : 'rank-other'}">${rank + 1}</div>
+          <div class="result-info">
+            <div class="result-name">${r.name}${isWinner ? '<span class="best-tag">Best</span>' : ''}</div>
+            <div class="result-meta">
+              Net $${fmtD(r.net)} × ${r.effectiveRate} PKR
+              ${r.fee > 0 ? `· Fee $${r.fee}` : '· No flat fee'}
+              ${r.note ? `· ${r.note}` : ''}
+            </div>
+            ${diffFromBest ? `<div style="font-size:10px;color:var(--red);margin-top:2px;font-family:var(--mono);">Best se ₨${fmt(diffFromBest)} kam</div>` : ''}
+          </div>
+          <div class="result-pkr">
+            <div class="pkr-amount ${isWinner ? 'best' : ''}">₨${fmt(r.pkr)}</div>
+            <div class="pkr-loss">Market se ₨${fmt(r.loss)} kam</div>
+          </div>
+        </div>`;
+      });
+
+      if (best) {
+        const pct = ((best.loss / market_pkr) * 100).toFixed(1);
+        html += `<div class="rec-box">
+          <div class="rec-title">Karo: ${best.name}</div>
+          <div class="rec-body">₨${fmt(best.pkr)} milega · market se sirf ${pct}% kam · fee $${best.fee}${breakeven ? ` · Break-even $${breakeven}+` : ''}</div>
+        </div>`;
+      }
+    }
+
+    if (breakeven) {
+      const progress = Math.min((usd / breakeven) * 100, 100);
+      const markerPos = Math.min(100, 100);
+      html += `<div class="breakeven-bar" style="margin-top:12px;">
+        <div class="be-label">nsave vs Direct — Break-even: $${breakeven}
+          ${usd < breakeven
+            ? ` · $${breakeven - Math.round(usd)} aur chahiye nsave ke liye`
+            : ` · nsave zone mein ho`}
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:10px;color:var(--text3);font-family:var(--mono);">$0</span>
+          <div class="be-track" style="flex:1;">
+            <div class="be-fill" style="width:${progress}%;"></div>
+            <div class="be-marker" style="left:${markerPos}%;"></div>
+          </div>
+          <span style="font-size:10px;color:var(--green);font-family:var(--mono);">$${breakeven}+</span>
+        </div>
+      </div>`;
+    }
+  }
+
+  document.getElementById('results').innerHTML = html;
+}
+
+renderRoutes();
+calculate();
+</script>
+</body>
+</html>
